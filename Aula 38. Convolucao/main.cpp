@@ -1,13 +1,21 @@
 #include<opencv2/opencv.hpp>
 #include <>
 
+enum class conv { SAME, FULL };
 
-void convolve1D(cv::Mat src, cv::Mat& dst, cv::Mat kernel) {
+void convolve1D(cv::Mat src, cv::Mat& dst, cv::Mat kernel, conv type = conv::SAME) {
 
     cv::flip(kernel, kernel, 1);
     int border = CV_HAL_BORDER_CONSTANT;
     cv::Point anchor(-1, -1);
 
+    if (type == conv::SAME)
+        cv::filter2D(src, dst, src.depth(), kernel, anchor, 0.0, border);
+    else if (type == conv::FULL) {
+        unsigned extra = kernel.cols - 1;
+        cv::copyMakeBorder(src, src, 0, 0, extra / 2, extra / 2, border, cv::Scalar(0));
+        cv::filter2D(src, dst, src.depth(), kernel, anchor, 0.0, border);
+    }
 }
 
 int main()
@@ -22,7 +30,7 @@ int main()
 
     cv::Mat result;
     cv::filter2D(src, result, src.depth(), kernel);
-    //convolve1D(src, result, kernel);
+    //convolve1D(src, result, kernel, conv::FULL);
 
     src.convertTo(src, CV_8U);
     kernel.convertTo(kernel, CV_8U);
