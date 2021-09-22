@@ -26,7 +26,12 @@ void convolve2D(cv::Mat src, cv::Mat& dst, cv::Mat kernel, conv type = conv::SAM
 
     if (type == conv::SAME)
         cv::filter2D(src, dst, src.depth(), kernel, anchor, 0.0, border);
-
+    else if (type == conv::FULL) {
+        unsigned extra_rows = kernel.rows - 1;
+        unsigned extra_cols = kernel.cols - 1;
+        cv::copyMakeBorder(src, src, extra_rows/2, extra_rows/2, extra_cols / 2, extra_cols / 2, border, cv::Scalar(0));
+        cv::filter2D(src, dst, src.depth(), kernel, anchor, 0.0, border);
+    }
 }
 
 int main()
@@ -41,7 +46,7 @@ int main()
 
     cv::Mat result;
     //cv::filter2D(src, result, src.depth(), kernel);
-    convolve2D(src, result, kernel, conv::Same);
+    convolve2D(src, result, kernel, conv::FULL);
 
     src.convertTo(src, CV_8U);
     kernel.convertTo(kernel, CV_8U);
